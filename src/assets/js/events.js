@@ -48,7 +48,25 @@ window.addEventListener( 'load', () => {
         }
     } );
 
+    //start button 
+    document.getElementById('start-meeting').style.display = 'none';
 
+    //function to get button visible
+    function showStartBtn(e, url) { 
+        let startBtn = document.getElementById('start-meeting');
+        startBtn.style.display = 'block'; 
+
+        startBtn.addEventListener("click", () => {
+            Object.assign(document.createElement('a'), {
+                target: '_self',
+                rel: 'noopener noreferrer',
+                href: url,
+            }).click();
+        });
+        e.preventDefault(); 
+    }; 
+
+    
     //When the 'Create room" is button is clicked
     document.getElementById( 'create-room' ).addEventListener( 'click', ( e ) => {
         e.preventDefault();
@@ -65,11 +83,12 @@ window.addEventListener( 'load', () => {
 
             //create room link
             let roomLink = `${ location.origin }?room=${ roomName.trim().replace( ' ', '_' ) }_${ helpers.generateRandomString() }`;
+            
+            alert("Room successfully created.");  // display alert message
 
-            //show message with link to room
-            document.querySelector( '#room-created' ).innerHTML = `Room successfully created. Click <a href='${ roomLink }'>here</a> to enter room. 
-                Share the room link with your partners.`;
-
+            //start a meeting button
+            showStartBtn(e, roomLink);
+            
             //empty the values
             document.querySelector( '#room-name' ).value = '';
             document.querySelector( '#your-name' ).value = '';
