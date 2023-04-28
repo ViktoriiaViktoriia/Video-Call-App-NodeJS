@@ -28,7 +28,25 @@ const stream = ( socket ) => {
 
     socket.on( 'chat', ( data ) => {
         socket.to( data.room ).emit( 'chat', { sender: data.sender, msg: data.msg } );
+        console.log(data);
     } );
+
+    //receive the data on the server side
+    console.log('new socket connection:' + socket.id);
+    socket.on('drawing', (data) => {
+        
+        //socket client data (x, y), socket server data (data.x, data.y)
+        //server emiting data to the client
+        socket.to( data.room ).emit('drawing', {
+            x: data.x,
+            y: data.y,
+            color: data.color,
+            sender: data.sender
+        });
+
+        console.log(data);
+    });
+
 };
 
 module.exports = stream;

@@ -1,9 +1,16 @@
 export default {
+
     generateRandomString() {
         const crypto = window.crypto || window.msCrypto;
         let array = new Uint32Array(1);
         
         return crypto.getRandomValues(array);
+    },
+
+    //function to get color from a dropdown menu
+    showBrushColor(e) {
+        document.getElementById("selectColors").classList.toggle("show");
+        e.preventDefault(); 
     },
 
 
@@ -14,11 +21,9 @@ export default {
         }
     },
 
-
     pageHasFocus() {
         return !( document.hidden || document.onfocusout || window.onpagehide || window.onblur );
     },
-
 
     getQString( url = '', keyToReturn = '' ) {
         url = url ? url : location.href;
@@ -178,6 +183,17 @@ export default {
         }
     },
 
+    drawLine(x, y, color) {
+
+        var canvas = document.getElementById( 'canvas-board' );
+        var context = canvas.getContext('2d');
+        
+        //canvas methods to draw the line
+        context.lineTo(x, y);
+        context.strokeStyle = color;
+        context.lineWidth = 1;
+        context.stroke();                 
+    },
 
 
     replaceTrack( stream, recipientPeer ) {
@@ -239,7 +255,6 @@ export default {
 
         saveAs( file );
     },
-
 
     toggleModal( id, show ) {
         let el = document.getElementById( id );

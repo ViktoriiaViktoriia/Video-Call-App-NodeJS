@@ -10,6 +10,8 @@ window.addEventListener( 'load', () => {
 
     if ( !room ) {
         document.querySelector( '#room-create' ).attributes.removeNamedItem( 'hidden' );
+        
+        document.querySelector( '#copyRoomLink' ).attributes.removeNamedItem( 'hidden' );
     }
 
     else if ( !username ) {
@@ -29,10 +31,40 @@ window.addEventListener( 'load', () => {
 
         var socketId = '';
         var randomNumber = `__${h.generateRandomString()}__${h.generateRandomString()}__`;
+        var roomN = room;
         var myStream = '';
         var screen = '';
         var recordedStream = [];
         var mediaRecorder = '';
+        
+        var canvas = document.getElementById( 'canvas-board' );
+        var colors = document.getElementById( 'selectColor');
+        var context = canvas.getContext('2d');
+        
+        canvas.width  = 750;        //window.innerWidth;
+        canvas.height = 550;        //window.innerHeight;
+
+        var drawing = false;
+
+        var x, y, selectedColor;
+
+        context.fillStyle = 'white';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        
+        //Touch support for mobile devices
+        //canvas.addEventListener('touchstart', onMouseDown);
+        //canvas.addEventListener('touchend', onMouseUp);
+        //canvas.addEventListener('touchcancel', onMouseUp);
+        //canvas.addEventListener('touchmove', onMouseMove);
+
+        //select color to draw in canvas board
+        colors.addEventListener( 'click', (e) => {
+            e.preventDefault(); 
+               
+            selectedColor = e.target.className.split(' ')[1];
+        });
+        
 
         //Get user video by default
         getAndSetUserStream();
@@ -41,14 +73,16 @@ window.addEventListener( 'load', () => {
         socket.on( 'connect', () => {
             //set socketId
             socketId = socket.io.engine.id;
-            document.getElementById('randomNumber').innerText = randomNumber;
-
+            //document.getElementById('randomNumber').innerText = randomNumber;
+            
+            //room name display
+            document.getElementById('roomN').textContent = `${roomN}`;
+            console.log(roomN);
 
             socket.emit( 'subscribe', {
                 room: room,
                 socketId: socketId
             } );
-
 
             socket.on( 'new user', ( data ) => {
                 socket.emit( 'newUserStart', { to: data.socketId, sender: socketId } );
@@ -102,7 +136,15 @@ window.addEventListener( 'load', () => {
 
             socket.on( 'chat', ( data ) => {
                 h.addChat( data, 'remote' );
+                //console.log(data);
             } );
+            
+            
+            socket.on('drawing', ( data ) => {
+                h.drawLine(data.x, data.y, data.color);
+                console.log(data);
+            });
+              
         } );
 
 
@@ -131,7 +173,6 @@ window.addEventListener( 'load', () => {
             //add localchat
             h.addChat( data, 'local' );
         }
-
 
 
         function init( createOffer, partnerName ) {
@@ -249,7 +290,6 @@ window.addEventListener( 'load', () => {
         }
 
 
-
         function shareScreen() {
             h.shareScreen().then( ( stream ) => {
                 h.toggleShareIcons( true );
@@ -351,7 +391,8 @@ window.addEventListener( 'load', () => {
                 console.error( e );
             };
         }
-
+        
+        //Chat input button "Send"
         document.getElementById('chat-input-btn').addEventListener('click',(e) => {
             console.log("here: ",document.getElementById('chat-input').value)
             if (  document.getElementById('chat-input').value.trim()  ) {
@@ -493,5 +534,125 @@ window.addEventListener( 'load', () => {
                 } ).catch( () => { } );
             }
         } );
+
+        
+        //whiteboard events listening
+        
+        canvas.addEventListener( 'mousedown', (e) => {
+            e.preventDefault();
+            drawing = true;
+            context.beginPath();
+
+            //define the starting coordinate
+            x = e.clientX;
+		    y = e.clientY;  
+            
+        });
+        
+        canvas.addEventListener( 'mouseup', (e) => {
+            e.preventDefault();
+            
+            drawing = false;
+            context.closePath();
+        });
+
+        canvas.addEventListener( 'mouseout', (e) => {
+            e.preventDefault();
+            
+            drawing = false;
+        });
+
+        canvas.addEventListener( 'mouseleave', (e) => {
+            e.preventDefault();
+           
+           drawing = false;
+        });
+                
+        canvas.addEventListener( 'mousemove', (e) => {
+            e.preventDefault();     
+
+            let data = {
+                room: room,
+				'x': x,
+				'y': y,
+                'color': selectedColor,
+                sender: `${username}`
+            };
+             
+            //define a current mouse position
+            data.x = e.clientX; 
+            data.y = e.clientY-100;   
+                 
+ 
+            if(!drawing) {return;}
+            
+		    if (drawing) {
+  
+                h.drawLine(data.x, data.y, data.color);
+                
+                //emiting the event 
+                socket.emit( 'drawing', data );
+                console.log(data);         
+		    }
+            
+        }); 
+
+
+         //When user clicks the 'Save' button
+         document.getElementById( 'save' ).addEventListener( 'click', ( e ) => {
+            e.preventDefault();
+
+            let textArea = document.getElementById( 'whiteboard-input-text' );
+
+            //for canvas whiteboard
+            if (canvas && textArea.hidden == true) {
+                //Create base64 encoded image
+                let img = new Image();
+                img.src ='data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+
+                //draw the image
+                context.drawImage(img, 0,0);
+
+                //using toBlob() method to create a Blob object representing the image contained in the canvas
+                canvas.toBlob(function(blob) {
+                    //save the image
+                    saveAs(blob, `${ username }-${ moment().unix() }-drawing.jpeg`);
+                }, "image/jpeg", 1);
+            }
+
+            //text area 
+            if(textArea && canvas.hidden == true){
+                //window.print(); //pdf
+    
+                let textAsBlob = new Blob( [textArea.value], { type: "text/plain;charset=utf-8" });
+
+                let textFile = new File( [textAsBlob], `${ username }-${ moment().unix() }-textfile.txt` );
+
+                saveAs( textFile );
+            }
+
+            
+        } );
+
+        //When user clicks the 'Clean' button
+        document.getElementById( 'clean' ).addEventListener( 'click', ( e ) => {
+            e.preventDefault();
+
+            let textArea = document.getElementById( 'whiteboard-input-text' );
+            
+            //for canvas whiteboard
+            if(canvas && textArea.hidden == true) {
+                //set canvas background color to white (=clean board)
+                context.fillStyle = 'white';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            //clean text area
+            if (textArea  && canvas.hidden == true) {
+                textArea.value = "";
+            }
+        });
+
+       
     }
 } );
