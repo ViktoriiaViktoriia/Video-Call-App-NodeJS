@@ -27,7 +27,10 @@ window.addEventListener( 'load', () => {
 
         var pc = [];
 
-        let socket = io( '/stream' );
+        /*let socket = io( '/stream', {
+            reconnectionDelay: 10000, // defaults to 1000
+            reconnectionDelayMax: 10000 // defaults to 5000
+        } );*/
 
         var socketId = '';
         var randomNumber = `__${h.generateRandomString()}__${h.generateRandomString()}__`;
@@ -74,10 +77,23 @@ window.addEventListener( 'load', () => {
             //set socketId
             socketId = socket.io.engine.id;
             //document.getElementById('randomNumber').innerText = randomNumber;
+
+            /*if (socket.recovered) {
+                // any missed packets will be received
+                console.log("socket recovered", socket.recovered);
+            } else {
+                
+                setTimeout(() => {
+                    if (socket.io.engine) {
+                       // close the low-level connection and trigger a reconnection
+                       socket.io.engine.close();
+                    }
+                }, 5000);
+            }  */ 
             
             //room name display
             document.getElementById('roomN').textContent = `${roomN}`;
-            console.log(roomN);
+            //console.log(roomN);
 
             socket.emit( 'subscribe', {
                 room: room,

@@ -8,6 +8,9 @@ const stream = ( socket ) => {
         if ( socket.adapter.rooms.has(data.room) === true ) {
             socket.to( data.room ).emit( 'new user', { socketId: data.socketId } );
         }
+
+        //console.log(adapter.rooms);
+        //console.log(adapter.sids);
     } );
 
 
