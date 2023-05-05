@@ -27,10 +27,10 @@ window.addEventListener( 'load', () => {
 
         var pc = [];
 
-        /*let socket = io( '/stream', {
+        let socket = io( '/stream', {
             reconnectionDelay: 10000, // defaults to 1000
             reconnectionDelayMax: 10000 // defaults to 5000
-        } );*/
+        } );
 
         var socketId = '';
         var randomNumber = `__${h.generateRandomString()}__${h.generateRandomString()}__`;

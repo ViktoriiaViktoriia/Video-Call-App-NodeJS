@@ -65,7 +65,7 @@ io.of('/stream').adapter.on('error', function(err, req, res, next) {
     });
 });
 
-io.of('/stream').adapter.on('connection', stream);
+io.of('/stream').on('connection', stream);
 
 
 server.listen( 3000 );
