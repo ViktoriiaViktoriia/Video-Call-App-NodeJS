@@ -7,6 +7,8 @@ import h from './helpers.js';
 window.addEventListener( 'load', () => {
     const room = h.getQString( location.href, 'room' );
     const username = sessionStorage.getItem( 'username' );
+    
+    document.getElementById('users').innerHTML = `<p>Users (1) online:</p> ${ username }`; 
 
     if ( !room ) {
         document.querySelector( '#room-create' ).attributes.removeNamedItem( 'hidden' );
@@ -28,8 +30,8 @@ window.addEventListener( 'load', () => {
         var pc = [];
 
         let socket = io( '/stream', {
-            reconnectionDelay: 10000, // defaults to 1000
-            reconnectionDelayMax: 10000 // defaults to 5000
+            reconnectionDelay: 1000, // defaults to 1000
+            reconnectionDelayMax: 1000 // defaults to 5000
         } );
 
         var socketId = '';
@@ -48,6 +50,7 @@ window.addEventListener( 'load', () => {
         canvas.height = 550;        //window.innerHeight;
 
         var drawing = false;
+        //var typing = false;
 
         var x, y, selectedColor;
 
@@ -76,6 +79,7 @@ window.addEventListener( 'load', () => {
         socket.on( 'connect', () => {
             //set socketId
             socketId = socket.io.engine.id;
+            
             //document.getElementById('randomNumber').innerText = randomNumber;
 
             /*if (socket.recovered) {
@@ -101,14 +105,14 @@ window.addEventListener( 'load', () => {
             } );
 
             socket.on( 'new user', ( data ) => {
-                socket.emit( 'newUserStart', { to: data.socketId, sender: socketId } );
+                socket.emit( 'newUserStart', { to: data.socketId, sender: socketId} );
                 pc.push( data.socketId );
                 init( true, data.socketId );
             } );
 
 
             socket.on( 'newUserStart', ( data ) => {
-                pc.push( data.sender );
+                pc.push( data.sender);
                 init( false, data.sender );
             } );
 
@@ -157,9 +161,16 @@ window.addEventListener( 'load', () => {
             
             
             socket.on('drawing', ( data ) => {
-                h.drawLine(data.x, data.y, data.color);
+                h.drawLine(data.x, data.y, data.color, data.sender, 'remote');
                 console.log(data);
             });
+
+            socket.on( 'typing', ( data ) => {
+                
+                h.addTextRemote( data.text, data.sender,'remote' );
+                
+                console.log(data);
+            } );
               
         } );
 
@@ -246,6 +257,7 @@ window.addEventListener( 'load', () => {
             //add
             pc[partnerName].ontrack = ( e ) => {
                 let str = e.streams[0];
+               
                 if ( document.getElementById( `${ partnerName }-video` ) ) {
                     document.getElementById( `${ partnerName }-video` ).srcObject = str;
                 }
@@ -258,10 +270,11 @@ window.addEventListener( 'load', () => {
                     newVid.autoplay = true;
                     newVid.className = 'remote-video';
 
+
                     //video controls elements
                     let controlDiv = document.createElement( 'div' );
                     controlDiv.className = 'remote-video-controls';
-                    controlDiv.innerHTML = `<i class="fa fa-microphone text-white pr-3 mute-remote-mic" title="Mute"></i>
+                    controlDiv.innerHTML = `<p id="text-card" class="text-white">${ username }</p> <i class="fa fa-microphone text-white pr-3 mute-remote-mic" title="Mute"></i>
                         <i class="fa fa-expand text-white expand-remote-video" title="Expand"></i>`;
 
                     //create a new div for card
@@ -275,6 +288,32 @@ window.addEventListener( 'load', () => {
                     document.getElementById( 'videos' ).appendChild( cardDiv );
 
                     h.adjustVideoElemSize();
+
+                    //Users(participants) list
+                    var number = 0;
+                    let userslistDiv = document.getElementById('users'); 
+                    userslistDiv.innerHTML=`<p id="users-online-number"></p> ${ username }`;  
+
+                    let usersDiv = document.createElement( 'div' );
+                    usersDiv.className = 'row row-cols-1';
+
+                    let user = document.createElement( 'div' );
+                    user.className = 'col';
+                    user.id = partnerName;       
+                    user.innerHTML=`${ username }`;   
+                
+                    console.log(user);
+                    
+
+                    usersDiv.appendChild( user );
+                    userslistDiv.appendChild( usersDiv );
+
+                    let count = usersDiv.getElementsByTagName('*').length;
+                    number = count +1;
+                    console.log(number);
+
+                    document.getElementById('users-online-number').innerText = `Users (${ number }) online:`;
+
                 }
             };
 
@@ -302,6 +341,7 @@ window.addEventListener( 'load', () => {
                         h.closeVideo( partnerName );
                         break;
                 }
+                
             };
         }
 
@@ -551,17 +591,19 @@ window.addEventListener( 'load', () => {
             }
         } );
 
+
         
         //whiteboard events listening
         
         canvas.addEventListener( 'mousedown', (e) => {
             e.preventDefault();
+
             drawing = true;
             context.beginPath();
 
             //define the starting coordinate
             x = e.clientX;
-		    y = e.clientY;  
+		    y = e.clientY; 
             
         });
         
@@ -570,12 +612,14 @@ window.addEventListener( 'load', () => {
             
             drawing = false;
             context.closePath();
+            
         });
 
         canvas.addEventListener( 'mouseout', (e) => {
             e.preventDefault();
             
             drawing = false;
+            
         });
 
         canvas.addEventListener( 'mouseleave', (e) => {
@@ -583,39 +627,42 @@ window.addEventListener( 'load', () => {
            
            drawing = false;
         });
+
                 
         canvas.addEventListener( 'mousemove', (e) => {
             e.preventDefault();     
 
             let data = {
                 room: room,
-				'x': x,
-				'y': y,
-                'color': selectedColor,
-                sender: `${username}`
+				x: x,
+				y: y,
+                color: selectedColor,
+                sender: `${username}`                 
             };
              
             //define a current mouse position
             data.x = e.clientX; 
-            data.y = e.clientY-100;   
-                 
+            data.y = e.clientY-100;    
  
-            if(!drawing) {return;}
+            //if(!drawing) {return;}
             
 		    if (drawing) {
   
-                h.drawLine(data.x, data.y, data.color);
+                h.drawLine(data.x, data.y, data.color, data.sender, 'local');
                 
                 //emiting the event 
                 socket.emit( 'drawing', data );
-                console.log(data);         
-		    }
+                console.log(data);    
+		    }else {
+                drawing = false;
+                context.closePath(); 
+            }
             
         }); 
 
 
-         //When user clicks the 'Save' button
-         document.getElementById( 'save' ).addEventListener( 'click', ( e ) => {
+        //When user clicks the 'Save' button
+        document.getElementById( 'save' ).addEventListener( 'click', ( e ) => {
             e.preventDefault();
 
             let textArea = document.getElementById( 'whiteboard-input-text' );
@@ -669,6 +716,47 @@ window.addEventListener( 'load', () => {
             }
         });
 
+        //Get users list
+       /* document.getElementById('users-list').addEventListener('click',(e) => {
+           e.preventDefault();
+
+           var users = [];
+
+           users = userList.valueOf();
+           console.log(users); 
+        });*/
+
+
+        function sendText( text ) {
+            let data = {
+                room: room,
+                text: text,
+                sender: `${username}`
+            };
+
+            //add local text
+            h.addTextRemote(data.text, data.sender, 'local' );
+
+            //emit text 
+            socket.emit( 'typing', data );
+            console.log(data);
+            
+        }
+
+        //Board textarea
+        document.getElementById( 'whiteboard-input-text' ).addEventListener( 'input', ( e ) => {
+
+            //typing = true;
+
+            if (e.target.value){
+                e.preventDefault();
+        
+                console.log('value:', e.target.value );
+
+                sendText( e.target.value ); 
+            }
+            
+        } );
        
     }
 } );

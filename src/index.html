@@ -59,8 +59,12 @@
                    Room: <span id='roomN'></span>
                 </span>
 
+                <button class="btn btn-sm text-white rounded-0 btn-no-effect" id='users-list' title="Users list">
+                    <i class="fas fa-users"></i>
+                </button>
+
                 <button class="btn btn-sm text-white rounded-0 btn-no-effect" id='toggle-whiteboard' title="Whiteboard">
-                    <i class="fa fa-file-word fa-fw" aria-hidden="true"></i>
+                    <i class="fa fa-file-word fa-fw" aria-hidden="true"></i><span class="badge badge-danger very-small font-weight-lighter" id='new-board-notification' hidden>New</span>
                 </button>
 
                 <button class="btn btn-sm rounded-0 btn-no-effect" id='toggle-video' title="Hide Video">
@@ -148,6 +152,7 @@
             </div>
             
             <div class="row">
+                <div class="col-md-2 users-col d-print-none" id='users' hidden></div>
                 <div class="col-md-12 main" id='main-section'>                    
                     <div class="row mt-2 mb-2" id='videos'></div>
                 </div>
@@ -175,7 +180,7 @@
                         </button>
                     </div>
                     <form>
-                        <div class="input-group mb-2 mt-2" >
+                        <div id ="board-space" class="input-group mb-2 mt-2" >
                             <canvas id="canvas-board" class="canvas-whiteboard bg-white" hidden></canvas>
                             <textarea  id="whiteboard-input-text" class="form-control textarea-input rounded-0 border-info" rows='25' placeholder="Type here..."></textarea>
                         </div>

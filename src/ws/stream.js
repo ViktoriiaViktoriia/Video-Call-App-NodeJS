@@ -1,6 +1,6 @@
 const stream = ( socket ) => {
     socket.on( 'subscribe', ( data ) => {
-        //subscribe/join a room
+        //join a room
         socket.join( data.room );
         socket.join( data.socketId );
 
@@ -8,14 +8,11 @@ const stream = ( socket ) => {
         if ( socket.adapter.rooms.has(data.room) === true ) {
             socket.to( data.room ).emit( 'new user', { socketId: data.socketId } );
         }
-
-        //console.log(adapter.rooms);
-        //console.log(adapter.sids);
     } );
 
 
     socket.on( 'newUserStart', ( data ) => {
-        socket.to( data.to ).emit( 'newUserStart', { sender: data.sender } );
+        socket.to( data.to ).emit( 'newUserStart', { sender: data.sender} );
     } );
 
 
@@ -49,6 +46,12 @@ const stream = ( socket ) => {
 
         console.log(data);
     });
+
+
+    socket.on( 'typing', ( data ) => {
+        socket.to( data.room ).emit( 'typing', { sender: data.sender, text: data.text} );
+        console.log(data);
+    } );
 
 };
 

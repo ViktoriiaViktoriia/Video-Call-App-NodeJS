@@ -1,6 +1,6 @@
 /* chat */
 .chat-col{
-    /*right*/left: -100vw;
+    left: -100vw;
     bottom: 0;
     top: 40.5px;
     z-index: 1000;
@@ -15,7 +15,7 @@
 }
 
 .chat-col.chat-opened {
-    /*right*/left: 0;
+    left: 0;
     overflow-y: auto;
     overflow-x: hidden;
     transition: all 0.3s ease !important;
@@ -63,6 +63,34 @@
     height: 100%;
     overflow-x: scroll;
 }
+
+/*users list space*/
+.users-col {
+    left: -30vw;
+    bottom: 0;
+    top: 40px;
+    z-index: 1000;
+    position: fixed;
+    color: rgb(28, 31, 34);
+    padding-right: 5px;
+    padding-left: 5px;
+    padding-bottom: 40px;
+    padding-top: 15px;
+    min-height: 100vh;
+    background-color:#d4ecf1;
+    border-color: rgb(70, 69, 69);
+}
+
+.users-col.userslist-opened {
+    left: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: all 0.3s ease !important;
+    -webkit-transition: all 0.3s ease !important;
+    -moz-transition: all 0.3s ease !important;      
+} 
+
+
 
 /* white board space*/
 .board-col{
@@ -149,9 +177,10 @@
     -moz-transition: all 0.3s ease !important;  
 }
 
-/* */
+/* videos */
 .main{
     padding-top: 40px;
+    margin-left: auto; 
 }
 
 /* video */
@@ -163,15 +192,17 @@
 
 .remote-video-controls{
     position:absolute;
+    display:inline-flex;
+    justify-content: space-between;
     bottom: 0;
-    background-color:rgba(0, 0, 0, 0.5);
+    background-color:rgba(33, 32, 32, 0.5);
     z-index:300000;
     padding: 10px;
     width: 100%;
+    max-height: 43px;
     text-align: center;
     visibility: hidden;
 }
-
 
 .remote-video:hover + .remote-video-controls,
 .remote-video-controls:hover{

@@ -14,13 +14,13 @@ const { Server } = require( "socket.io");
 const { createClient} = require('redis');
 const { createAdapter} = require('@socket.io/redis-streams-adapter');
 
-var cookieParser = require('cookie-parser');
-//let SocketIoRedisStore = require('redis');
-
 let redisClient = createClient({ 
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: process.env.REDIS_PORT || 6379,
 });
+
+var cookieParser = require('cookie-parser');
+//let SocketIoRedisStore = require('redis');
 
 
 //error handler
@@ -50,10 +50,10 @@ redisClient.connect().catch(console.error);
 let io = require( 'socket.io' )( server, {
     adapter: createAdapter(redisClient),
     connectionStateRecovery: {
-        // the backup duration of the sessions and the packets
-        maxDisconnectionDuration: 2 * 60 * 1000,
-        // whether to skip middlewares upon successful recovery
-        skipMiddlewares: true,
+      // sessions and packets backup duration
+      maxDisconnectionDuration: 2 * 60 * 1000,
+      //on successful restore, the middleware will be skipped
+      skipMiddlewares: true,
     }
 });
 

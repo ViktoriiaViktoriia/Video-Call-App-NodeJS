@@ -68,7 +68,6 @@ export default {
                 }
             } );
         }
-
         else {
             throw new Error( 'User media not available' );
         }
@@ -183,18 +182,53 @@ export default {
         }
     },
 
-    drawLine(x, y, color) {
+    addTextRemote(input, sender, senderType ) {
+        
+        let text = document.querySelector('#whiteboard-input-text');
+        let senderName = 'You';
+
+        if ( senderType === 'remote' ) {
+
+            senderName = sender;
+
+            this.toggleBoardtNotificationBadge();    
+        } 
+
+        text.innerText = `${ input }`;
+        
+    },
+
+
+    drawLine(x, y, color, sender, senderType) {
 
         var canvas = document.getElementById( 'canvas-board' );
         var context = canvas.getContext('2d');
-        
+
+        let senderName = 'You';
+
+        if ( senderType === 'remote' ) {
+            senderName = sender;
+
+            this.toggleBoardtNotificationBadge();
+        }
+        console.log(senderType, senderName);
+
         //canvas methods to draw the line
         context.lineTo(x, y);
         context.strokeStyle = color;
         context.lineWidth = 1;
-        context.stroke();                 
+        context.stroke();      
     },
+    
+    toggleBoardtNotificationBadge() {
+        if ( document.querySelector( '#whiteboard' ).classList.contains( 'board-opened' ) ) {
+            document.querySelector( '#new-board-notification' ).setAttribute( 'hidden', true );
+        }
 
+        else {
+            document.querySelector( '#new-board-notification' ).removeAttribute( 'hidden' );
+        }
+    },
 
     replaceTrack( stream, recipientPeer ) {
         let sender = recipientPeer.getSenders ? recipientPeer.getSenders().find( s => s.track && s.track.kind === stream.kind ) : false;

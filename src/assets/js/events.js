@@ -52,6 +52,29 @@ window.addEventListener( 'load', () => {
         e.preventDefault(); 
         
     } );
+
+    //When the users (participants) icon is clicked
+    document.querySelector( '#users-list' ).addEventListener( 'click', ( e ) => {
+        let userslistElem = document.querySelector( '#users' );
+        let mainSecElem = document.querySelector( '#main-section' );
+
+        if ( userslistElem.classList.contains( 'userslist-opened' ) ) {
+            userslistElem.setAttribute( 'hidden', true );
+            mainSecElem.classList.remove( 'col-md-9' );
+            mainSecElem.classList.add( 'col-md-12' );
+            userslistElem.classList.remove( 'userslist-opened' );
+        }
+
+        else {
+            userslistElem.attributes.removeNamedItem( 'hidden' );
+            mainSecElem.classList.remove( 'col-md-12' );
+            mainSecElem.classList.add( 'col-md-9' );
+            userslistElem.classList.add( 'userslist-opened' );
+        }
+
+        e.preventDefault(); 
+        
+    } );
     
     //when paint brush button is clicked
     document.querySelector( '#toggle-draw' ).addEventListener( 'click', ( e ) => {
